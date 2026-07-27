@@ -1,5 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import validates
+import re
+from datetime import datetime
 db = SQLAlchemy()
 
 class Exercise(db.Model):
@@ -11,6 +13,14 @@ class Exercise(db.Model):
     equipment_needed = db.Column(db.Boolean, nullable = False)
 
     workoutexercise = db.relationship('WorkoutExercise',back_populates='exercise', cascade= 'all, delete-orphan')
+
+    @validates('name')
+    def validate_name(self,key,value):
+        if not re.match(r'^[a-zA-Z ]$',value):
+            raise ValueError("The name of the exercise should only contain numbers, letters and spaces!")
+        else:
+            return value
+
 
     
 
@@ -24,14 +34,23 @@ class Workout(db.Model):
 
     workoutexercise = db.relationship('WorkoutExercise',back_populates='workout', cascade= 'all, delete-orphan')
 
+    @validates('date')
+    def validate_date(self,key,value):
+        try:
+            datetime.strptime(value,"%Y-%m-%d")
+        except ValueError:
+            raise ValueError("The date should be in the format DD-MM-YYYY")
+        return value
+
+
 
 '''This is a joining table that joins the workouts table and the exercises table because they have a many-to-many relationship'''
 class WorkoutExercise(db.Model):
     __tablename__ = 'workoutexercises'
 
     id = db.Column(db.Integer, primary_key = True)
-    workout_id = db.Column(db.Integer,db.ForeignKey('workouts.id'))
-    exercise_id = db.Column(db.Integer,db.ForeignKey('exercises.id'))
+    workout_id = db.Column(db.Integer,db.ForeignKey('workouts.id'),nullable=False)
+    exercise_id = db.Column(db.Integer,db.ForeignKey('exercises.id'),nullable=False)
     reps = db.Column(db.Integer, nullable = False)
     sets = db.Column(db.Integer, nullable = False)
     duration_seconds = db.Column(db.Integer, nullable = False)
