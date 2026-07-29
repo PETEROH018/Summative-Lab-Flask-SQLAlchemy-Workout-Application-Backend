@@ -16,19 +16,19 @@ class Exercise(db.Model):
 
     @validates('name')
     def validate_name(self,key,value):
-        if not re.match(r'^[a-zA-Z ]$',value):
-            raise ValueError("The name of the exercise should only contain numbers, letters and spaces!")
-        else:
-            return value
-
-
     
-
+        try:
+            if not re.match(r'^[a-zA-Z ]+$',value):
+                raise ValueError("The name of the exercise should only contain letters and spaces!")
+        except ValueError as e:
+            print(e)
+        return value
+    
 class Workout(db.Model):
     __tablename__ = 'workouts'
 
     id = db.Column(db.Integer, primary_key = True)
-    date = db.Column(db.Date, nullable = False)
+    date = db.Column(db.Text, nullable = False)
     duration_minutes = db.Column(db.Integer, nullable =False)
     notes = db.Column(db.String(50))
 
@@ -39,10 +39,8 @@ class Workout(db.Model):
         try:
             datetime.strptime(value,"%Y-%m-%d")
         except ValueError:
-            raise ValueError("The date should be in the format DD-MM-YYYY")
+            print("The date should be in the format YYYY-MM-DD")
         return value
-
-
 
 '''This is a joining table that joins the workouts table and the exercises table because they have a many-to-many relationship'''
 class WorkoutExercise(db.Model):
