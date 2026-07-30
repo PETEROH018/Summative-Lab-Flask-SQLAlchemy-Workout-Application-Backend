@@ -33,10 +33,12 @@ def get_workout(id):
 @app.route('/workouts',methods=['POST'])
 def add_workout():
     data = request.get_json()
-    new_workout = Workout(date=data["date"],duration_minutes=data["duration_minutes"],notes=data["notes"])
+    # new_workout = Workout(date=data["date"],duration_minutes=data["duration_minutes"],notes=data["notes"])
+    workout_schema = Workout_Schema()
+    new_workout = workout_schema.load(data)
     db.session.add(new_workout)
     db.session.commit()
-    return make_response({"message":"Added new workout"})
+    return make_response({"message":"Added a new workout"},201)
 
 @app.route('/workouts/<id>',methods=['DELETE'])
 def remove_workout(id):
@@ -47,6 +49,43 @@ def remove_workout(id):
         return make_response({"message":"Workout deleted successfully"},200)
     else:
         return make_response({"error":f"No workout with id: {id}"},404)
+
+@app.route('/exercises',methods=['GET'])
+def get_exercises():
+    exercises = Exercise.query.all()
+    if exercises:
+        exercises_schema = Exercise_Schema(many=True)
+        return make_response(exercises_schema.dump(exercises))
+    else:
+        return make_response({"error":"No exercises to show"})
+
+@app.route('/exercises/<id>',methods=['GET'])
+def get_exercise(id):
+    exercise = db.session.get(Exercise,id)
+    if exercise:
+        exercise_schema = Exercise_Schema()
+        return make_response(exercise_schema.dump(exercise),200)
+    else:
+        return make_response({"error":f"No exercise with id: {id}"},404)
+
+@app.route('/exercises',methods=['POST'])
+def add_exercise():
+    data = request.get_json()
+    exercise_schema = Exercise_Schema()
+    new_exercise=exercise_schema.load(data)
+    db.session.add(new_exercise)
+    db.session.commit()
+    return make_response({"message":"Added a new exercise"})
+
+@app.route('/exercises/<id>',methods=['DELETE'])
+def remove_exercise(id):
+    exercise = db.session.get(Exercise,id)
+    if exercise:
+        db.session.delete(exercise)
+        db.session.commit()
+        return make_response({"message":"Exercise deleted successfully"},200)
+    else:
+        return make_response({"error":f"No exercise with id: {id}"},404)
 
 
 if __name__ == '__main__':
