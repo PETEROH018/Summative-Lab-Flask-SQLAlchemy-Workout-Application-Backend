@@ -87,6 +87,16 @@ def remove_exercise(id):
     else:
         return make_response({"error":f"No exercise with id: {id}"},404)
 
+@app.route('/workouts/<workout_id>/exercises/<exercise_id>/workout_exercises',methods=['POST'])
+def add_workoutexercise(workout_id,exercise_id):
+    data={"workout_id":int(workout_id),"exercise_id":int(exercise_id),**request.get_json()}
+    print(data)
+    workoutexercise_schema = WorkoutExercise_Schema()
+    new_workoutexercise=workoutexercise_schema.load(data)
+    db.session.add(new_workoutexercise)
+    db.session.commit()
+    return make_response({"message":"Added a new workout exercise"})
+
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
