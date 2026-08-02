@@ -8,7 +8,7 @@ class Exercise(db.Model):
 
     id = db.Column(db.Integer, primary_key = True)
     name = db.Column(db.String(20), nullable = False)
-    category = db.Column(db.String(20), nullable = False)
+    category = db.Column(db.String(30), nullable = False)
     equipment_needed = db.Column(db.Boolean, nullable = False)
 
     workoutexercises = db.relationship('WorkoutExercise',back_populates='exercise', cascade= 'all, delete-orphan')
