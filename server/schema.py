@@ -8,6 +8,8 @@ class Exercise_Schema(SQLAlchemyAutoSchema):
         load_instance = True
         sqla_session = db.session
 
+    workoutexercises = fields.Nested("WorkoutExercise_Schema", many=True, exclude=('exercise','workout_id','exercise_id','id'))
+
 class WorkoutExercise_Schema(SQLAlchemyAutoSchema):
     class Meta:
         model = WorkoutExercise
@@ -16,7 +18,8 @@ class WorkoutExercise_Schema(SQLAlchemyAutoSchema):
         include_fk = True
         include_relationships = True
 
-    exercise = fields.Nested("Exercise_Schema")
+    exercise = fields.Nested("Exercise_Schema", exclude=('workoutexercises',))
+    workout = fields.Nested("Workout_Schema", exclude=('workoutexercises',))
 
 class Workout_Schema(SQLAlchemyAutoSchema):
     class Meta:

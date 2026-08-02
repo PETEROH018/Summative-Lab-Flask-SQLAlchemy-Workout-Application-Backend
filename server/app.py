@@ -18,7 +18,7 @@ db.init_app(app)
 def get_workouts():
     workouts = Workout.query.all()
     if workouts:
-        workouts_schema = Workout_Schema(many=True)
+        workouts_schema = Workout_Schema(many=True,exclude=('workoutexercises',))
         return make_response(workouts_schema.dump(workouts))
     else:
         return make_response({"error":"No workouts to show"})
@@ -55,14 +55,14 @@ def remove_workout(id):
 def get_exercises():
     exercises = Exercise.query.all()
     if exercises:
-        exercises_schema = Exercise_Schema(many=True)
+        exercises_schema = Exercise_Schema(many=True,exclude=('workoutexercises',))
         return make_response(exercises_schema.dump(exercises))
     else:
         return make_response({"error":"No exercises to show"})
 
 @app.route('/exercises/<id>',methods=['GET'])
 def get_exercise(id):
-    exercise = db.session.get(Exercise,id)
+    exercise = db.session.get(Exercise,id,options=[selectinload(Exercise.workoutexercises,WorkoutExercise.workout)])
     if exercise:
         exercise_schema = Exercise_Schema()
         {"id":exercise.id,"name":exercise.name,"category":exercise.category}
@@ -74,7 +74,6 @@ def get_exercise(id):
 def add_exercise():
     data = request.get_json()
     exercise_schema = Exercise_Schema()
-    # new_exercise = Exercise(name=data["name"],category=data["category"],duration_seconds=data["duration"])
     new_exercise=exercise_schema.load(data)
     db.session.add(new_exercise)
     db.session.commit()
@@ -99,6 +98,14 @@ def add_workoutexercise(workout_id,exercise_id):
     db.session.add(new_workoutexercise)
     db.session.commit()
     return make_response({"message":"Added a new workout exercise"})
+
+@app.errorhandler(ValueError)
+def handle_validation_error(error):
+    response_body = {
+        "error": "Input Validation Failed",
+        "message": error.args[0] if error.args else "Invalid data provided."
+    }
+    return make_response(response_body, 400)
 
 
 if __name__ == '__main__':
