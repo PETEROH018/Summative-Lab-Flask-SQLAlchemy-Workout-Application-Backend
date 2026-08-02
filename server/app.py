@@ -1,5 +1,7 @@
 from flask import Flask, make_response,request
 from flask_migrate import Migrate
+from sqlalchemy.orm import selectinload
+
 
 from models import *
 from schema import *
@@ -23,7 +25,7 @@ def get_workouts():
 
 @app.route('/workouts/<id>',methods=['GET'])
 def get_workout(id):
-    workout = db.session.get(Workout,id)
+    workout = db.session.get(Workout,id,options=[selectinload(Workout.workoutexercises,WorkoutExercise.exercise)])
     if workout:
         workout_schema = Workout_Schema()
         return make_response(workout_schema.dump(workout),200)
@@ -33,7 +35,6 @@ def get_workout(id):
 @app.route('/workouts',methods=['POST'])
 def add_workout():
     data = request.get_json()
-    # new_workout = Workout(date=data["date"],duration_minutes=data["duration_minutes"],notes=data["notes"])
     workout_schema = Workout_Schema()
     new_workout = workout_schema.load(data)
     db.session.add(new_workout)
@@ -64,6 +65,7 @@ def get_exercise(id):
     exercise = db.session.get(Exercise,id)
     if exercise:
         exercise_schema = Exercise_Schema()
+        {"id":exercise.id,"name":exercise.name,"category":exercise.category}
         return make_response(exercise_schema.dump(exercise),200)
     else:
         return make_response({"error":f"No exercise with id: {id}"},404)
@@ -72,6 +74,7 @@ def get_exercise(id):
 def add_exercise():
     data = request.get_json()
     exercise_schema = Exercise_Schema()
+    # new_exercise = Exercise(name=data["name"],category=data["category"],duration_seconds=data["duration"])
     new_exercise=exercise_schema.load(data)
     db.session.add(new_exercise)
     db.session.commit()
