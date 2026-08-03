@@ -3,7 +3,6 @@ from sqlalchemy.orm import validates
 import re
 from datetime import datetime
 db = SQLAlchemy()
-
 class Exercise(db.Model):
     __tablename__ = 'exercises'
 
@@ -12,16 +11,13 @@ class Exercise(db.Model):
     category = db.Column(db.String(20), nullable = False)
     equipment_needed = db.Column(db.Boolean, nullable = False)
 
-    workoutexercise = db.relationship('WorkoutExercise',back_populates='exercise', cascade= 'all, delete-orphan')
+    workoutexercises = db.relationship('WorkoutExercise',back_populates='exercise', cascade= 'all, delete-orphan')
 
     @validates('name')
     def validate_name(self,key,value):
     
-        try:
-            if not re.match(r'^[a-zA-Z ]+$',value):
-                raise ValueError("The name of the exercise should only contain letters and spaces!")
-        except ValueError as e:
-            print(e)
+        if not re.match(r'^[a-zA-Z ]+$',value):
+            raise ValueError("The name of the exercise should only contain letters and spaces!")
         return value
     
 class Workout(db.Model):
@@ -32,14 +28,14 @@ class Workout(db.Model):
     duration_minutes = db.Column(db.Integer, nullable =False)
     notes = db.Column(db.String(50))
 
-    workoutexercise = db.relationship('WorkoutExercise',back_populates='workout', cascade= 'all, delete-orphan')
+    workoutexercises = db.relationship('WorkoutExercise',back_populates='workout', cascade= 'all, delete-orphan')
 
     @validates('date')
     def validate_date(self,key,value):
         try:
             datetime.strptime(value,"%Y-%m-%d")
         except ValueError:
-            print("The date should be in the format YYYY-MM-DD")
+            raise ValueError("The date should be in the format YYYY-MM-DD")
         return value
 
 '''This is a joining table that joins the workouts table and the exercises table because they have a many-to-many relationship'''
@@ -53,5 +49,5 @@ class WorkoutExercise(db.Model):
     sets = db.Column(db.Integer, nullable = False)
     duration_seconds = db.Column(db.Integer, nullable = False)
 
-    exercise = db.relationship('Exercise',back_populates = 'workoutexercise')
-    workout = db.relationship('Workout',back_populates = 'workoutexercise')
+    exercise = db.relationship('Exercise',back_populates = 'workoutexercises')
+    workout = db.relationship('Workout',back_populates = 'workoutexercises')

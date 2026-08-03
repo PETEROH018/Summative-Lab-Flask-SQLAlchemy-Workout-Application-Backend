@@ -34,5 +34,6 @@ with app.app_context():
     db.session.add_all(workouts)
     db.session.add_all(workoutexercises)
     db.session.commit()
+    
 
 
