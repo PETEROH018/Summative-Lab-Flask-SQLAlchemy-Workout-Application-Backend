@@ -6,3 +6,4 @@ importlib-metadata
 importlib-resources
 ipdb
 marshmallow
+marshmallow-sqlalchemy
