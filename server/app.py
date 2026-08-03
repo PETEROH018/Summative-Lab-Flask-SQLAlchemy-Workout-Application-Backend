@@ -107,6 +107,11 @@ def handle_validation_error(error):
     }
     return make_response(response_body, 400)
 
+@app.errorhandler(ValidationError)
+def handle_marshmallow_validation_error(error):
+    return make_response({"error": "Input Validation Failed", "message": error.messages}, 400)
+
+
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
