@@ -109,7 +109,7 @@ def handle_validation_error(error):
 
 @app.errorhandler(ValidationError)
 def handle_marshmallow_validation_error(error):
-    return make_response({"error": "Input Validation Failed", "message": error.messages["equipment_needed"]}, 400)
+    return make_response({"error": "Input Validation Failed", "message": error.messages}, 400)
 
 
 

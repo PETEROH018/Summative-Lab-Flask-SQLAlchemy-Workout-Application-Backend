@@ -19,7 +19,7 @@ class WorkoutExercise_Schema(SQLAlchemyAutoSchema):
         sqla_session = db.session
         include_fk = True
         include_relationships = True
-
+    
     exercise = fields.Nested("Exercise_Schema", exclude=('workoutexercises',))
     workout = fields.Nested("Workout_Schema", exclude=('workoutexercises',))
 
@@ -30,4 +30,5 @@ class Workout_Schema(SQLAlchemyAutoSchema):
         sqla_session = db.session
         include_relationships = True
 
+    notes = fields.Str(validate=validate.Length(min=5,max=50,error="The notes should be 5 to 50 characters long"))
     workoutexercises = fields.Nested("WorkoutExercise_Schema", many=True , exclude=('id','exercise_id','workout_id','workout'))
