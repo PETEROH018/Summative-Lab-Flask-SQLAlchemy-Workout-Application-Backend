@@ -4,14 +4,17 @@ from app import app
 from models import *
 
 with app.app_context():
+    '''This section handles clearing the database tables to prevent duplicating data each time the database is seeded'''
     Exercise.query.delete()
     Workout.query.delete()
     WorkoutExercise.query.delete()
 
+    '''This section handles declaring new lists that will hold the database table records inform of model objects'''
     exercises = []
     workouts = []
     workoutexercises = []
 
+    '''This section handles creating the model objects and appending them to their respective list'''
     exercises.append(Exercise(name="Push ups",category="Upper Body / Strength",equipment_needed=False))
     exercises.append(Exercise(name="Squats",category="Lower Body / Strength",equipment_needed=False))
     exercises.append(Exercise(name="Plank",category="Core / Stability",equipment_needed=False))
@@ -30,6 +33,7 @@ with app.app_context():
     workoutexercises.append(WorkoutExercise(workout_id=4, exercise_id=3, reps=1, sets=3, duration_seconds=60))   # Plank in Workout 4
     workoutexercises.append(WorkoutExercise(workout_id=5, exercise_id=4, reps=10, sets=4, duration_seconds=0))   # Bicep Curls in Workout 5
 
+    '''This section handles populating the database with the sample data'''
     db.session.add_all(exercises)
     db.session.add_all(workouts)
     db.session.add_all(workoutexercises)

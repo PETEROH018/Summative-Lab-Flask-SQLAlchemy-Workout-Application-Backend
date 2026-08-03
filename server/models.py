@@ -11,8 +11,11 @@ class Exercise(db.Model):
     category = db.Column(db.String(30), nullable = False)
     equipment_needed = db.Column(db.Boolean, nullable = False)
 
+    # This relationship links the Exercise model and the WorkoutExercise model
+    # The delete-orphan setting ensures that if an exercise is deleted, the associated workoutexercise is deleted as well 
     workoutexercises = db.relationship('WorkoutExercise',back_populates='exercise', cascade= 'all, delete-orphan')
 
+    # @validates decorator is used for model level validation of the exercise name
     @validates('name')
     def validate_name(self,key,value):
     
@@ -28,8 +31,11 @@ class Workout(db.Model):
     duration_minutes = db.Column(db.Integer, nullable =False)
     notes = db.Column(db.String(50))
 
+    # This relationship links the Workout model and the WorkoutExercise model
+    # The delete-orphan setting ensures that if an exercise is deleted, the associated workoutexercise is deleted as well 
     workoutexercises = db.relationship('WorkoutExercise',back_populates='workout', cascade= 'all, delete-orphan')
 
+    # @validates decorator is used for model level validation of the date format
     @validates('date')
     def validate_date(self,key,value):
         try:
@@ -49,5 +55,7 @@ class WorkoutExercise(db.Model):
     sets = db.Column(db.Integer, nullable = False)
     duration_seconds = db.Column(db.Integer, nullable = False)
 
+    # This relationship links the WorkoutExercise model with the Exercise model
     exercise = db.relationship('Exercise',back_populates = 'workoutexercises')
+    # This relationship links the WorkoutExercise model with the Workout model
     workout = db.relationship('Workout',back_populates = 'workoutexercises')

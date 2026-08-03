@@ -18,6 +18,8 @@ db.init_app(app)
 def get_workouts():
     workouts = Workout.query.all()
     if workouts:
+        # When many is set to True, Workout_Schema handles serializing all workout python objects without having to manually loop through them
+        # Excluding workoutexercises ensures that only details about the workout are displayed without including details about the associated workoutexercises
         workouts_schema = Workout_Schema(many=True,exclude=('workoutexercises',))
         return make_response(workouts_schema.dump(workouts))
     else:
@@ -25,8 +27,12 @@ def get_workouts():
 
 @app.route('/workouts/<id>',methods=['GET'])
 def get_workout(id):
+    # selectinload method is used to nest multiple workoutexercises inside a single workout in the first argument
+    # selectinload is also used to nest a single exercise into each workoutexercise in the second argument
+    # This creates a nested python object
     workout = db.session.get(Workout,id,options=[selectinload(Workout.workoutexercises,WorkoutExercise.exercise)])
     if workout:
+        # Workout_Schema is used to serialize the nested pyton object (workout)
         workout_schema = Workout_Schema()
         return make_response(workout_schema.dump(workout),200)
     else:
@@ -36,6 +42,7 @@ def get_workout(id):
 def add_workout():
     data = request.get_json()
     workout_schema = Workout_Schema()
+    # The .load schema method handles the deserialization from a python dictionary(data) to a python object of the Workout model
     new_workout = workout_schema.load(data)
     db.session.add(new_workout)
     db.session.commit()
@@ -55,6 +62,8 @@ def remove_workout(id):
 def get_exercises():
     exercises = Exercise.query.all()
     if exercises:
+        # When many is set to True, Exercise_Schema handles serializing all exercise python objects without having to manually loop through them
+        # Excluding workoutexercises ensures that only details about the exercise are displayed without including details about the associated workoutexercises
         exercises_schema = Exercise_Schema(many=True,exclude=('workoutexercises',))
         return make_response(exercises_schema.dump(exercises))
     else:
@@ -62,10 +71,13 @@ def get_exercises():
 
 @app.route('/exercises/<id>',methods=['GET'])
 def get_exercise(id):
+    # selectinload method is used to nest multiple workoutexercises inside a single exercise in the first argument
+    # selectinload is also used to nest a single workout into each workoutexercise in the second argument
+    # This creates a nested python object
     exercise = db.session.get(Exercise,id,options=[selectinload(Exercise.workoutexercises,WorkoutExercise.workout)])
     if exercise:
+        #Exercise_Schema is used to serialize the nested pyton object (exercise)
         exercise_schema = Exercise_Schema()
-        {"id":exercise.id,"name":exercise.name,"category":exercise.category}
         return make_response(exercise_schema.dump(exercise),200)
     else:
         return make_response({"error":f"No exercise with id: {id}"},404)
@@ -74,6 +86,7 @@ def get_exercise(id):
 def add_exercise():
     data = request.get_json()
     exercise_schema = Exercise_Schema()
+    # The .load schema method handles the deserialization from a python dictionary(data) to a python object of the Exercise model
     new_exercise=exercise_schema.load(data)
     db.session.add(new_exercise)
     db.session.commit()
@@ -94,11 +107,13 @@ def add_workoutexercise(workout_id,exercise_id):
     data={"workout_id":int(workout_id),"exercise_id":int(exercise_id),**request.get_json()}
     print(data)
     workoutexercise_schema = WorkoutExercise_Schema()
+    # The .load schema method handles the deserialization from a python dictionary(data) to a python object of the WorkoutExercise model
     new_workoutexercise=workoutexercise_schema.load(data)
     db.session.add(new_workoutexercise)
     db.session.commit()
     return make_response({"message":"Added a new workout exercise"})
 
+# The @app.errorhandler decorator is used here to catch ValueError exceptions that happen on the model level and parse them into JSON format that can be cleanly sent to a client
 @app.errorhandler(ValueError)
 def handle_validation_error(error):
     response_body = {
@@ -107,6 +122,7 @@ def handle_validation_error(error):
     }
     return make_response(response_body, 400)
 
+# The @app.errorhandler decorator is used here to catch ValidationError exceptions that happen on the schema level and parse them into JSON format that can be cleanly sent to a client
 @app.errorhandler(ValidationError)
 def handle_marshmallow_validation_error(error):
     return make_response({"error": "Input Validation Failed", "message": error.messages}, 400)
